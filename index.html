@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bot Mines 1Win Mobile</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      color: #00ff99;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 20px;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cell {
+      background-color: #1e1e1e;
+      height: 50px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2em;
+      transition: 0.3s;
+    }
+
+    .safe {
+      background-color: #00c853;
+      color: white;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #00ff99;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      color: #000;
+      cursor: pointer;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 Bot Mines 1Win</h1>
+  <p>Génère des signaux sûrs à jouer (grille 5x5)</p>
+  <button onclick="genererSignaux()">🎯 Générer les signaux</button>
+  <div class="grid" id="grille"></div>
+  <div class="footer">Créé pour usage fictif – Non connecté à 1win</div>
+
+  <script>
+    const taille = 5;
+    const nbMines = 3;
+    const nbSignaux = 5;
+
+    function genererSignaux() {
+      const total = taille * taille;
+      const grille = document.getElementById("grille");
+      grille.innerHTML = "";
+
+      const mines = new Set();
+      while (mines.size < nbMines) {
+        mines.add(Math.floor(Math.random() * total));
+      }
+
+      const possibles = [...Array(total).keys()].filter(i => !mines.has(i));
+      const signaux = [];
+
+      while (signaux.length < nbSignaux) {
+        const idx = Math.floor(Math.random() * possibles.length);
+        signaux.push(possibles.splice(idx, 1)[0]);
+      }
+
+      for (let i = 0; i < total; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        if (signaux.includes(i)) {
+          cell.classList.add("safe");
+          cell.innerHTML = "✅";
+        }
+        grille.appendChild(cell);
+      }
+    }
+
+    genererSignaux();
+  </script>
+</body>
+</html>
