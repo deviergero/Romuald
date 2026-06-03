@@ -3,179 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Singularity V48 - Radar Bot</title>
+    <title>SINGULARITY V48 | VIP Radar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <style>
+        /* Variables de couleurs Cyber/Crypto */
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(26, 32, 53, 0.6);
+            --neon-blue: #00f0ff;
+            --neon-green: #00ff88;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ff3366;
+        }
+
         body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(0, 255, 136, 0.05) 0%, transparent 50%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            width: 90%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Effet Glassmorphism */
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px 25px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.2rem;
+            margin: 0 0 5px 0;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+
+        /* Barre de progression des crédits */
+        .credit-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .credit-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .vip-badge {
+            color: #fbbf24;
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Bouton principal animé */
+        .btn-neon {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            padding: 16px;
+            width: 100%;
+            border-radius: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) inset, 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+
+        .btn-neon:hover:not(:disabled) {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 25px var(--neon-blue);
+        }
+
+        .btn-neon:disabled {
+            border-color: #334155;
+            color: #64748b;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Animation du Radar (Chargement) */
+        .radar-box {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .radar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            margin: 0 auto 15px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radar::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100%; height: 100%;
+            background: conic-gradient(from 0deg, transparent 70%, var(--neon-blue) 100%);
+            transform-origin: 0 0;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Boîte de Résultat */
+        .result-box {
+            display: none;
+            margin-top: 25px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .target-multiplier {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            margin: 10px 0;
+            line-height: 1;
+        }
+
+        .target-time {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--neon-green);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        /* Section VIP */
+        .vip-section {
+            display: none;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        .vip-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+            color: white;
+            padding: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            outline: none;
             text-align: center;
         }
-        .container {
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 400px;
-        }
-        h1 { color: #38bdf8; margin-top: 0; }
-        .credits {
-            font-size: 1.2em;
-            background: #334155;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        button {
-            background: #2563eb;
-            color: white;
+
+        .vip-input:focus { border-color: #fbbf24; }
+
+        .btn-vip {
+            background: #fbbf24;
+            color: #000;
             border: none;
-            padding: 15px 20px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        button:hover { background: #1d4ed8; }
-        button:disabled { background: #475569; cursor: not-allowed; }
-        
-        .result-box {
-            margin-top: 20px;
             padding: 15px;
-            border: 2px solid #22c55e;
-            border-radius: 8px;
-            background: #064e3b;
-            display: none;
+            width: 100%;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        .target { font-size: 2em; color: #4ade80; font-weight: bold; }
         
-        .vip-section {
-            margin-top: 20px;
-            display: none;
-        }
-        input[type="text"] {
-            width: 90%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: 1px solid #64748b;
-            background: #0f172a;
-            color: white;
-        }
-        .loading { display: none; color: #fbbf24; font-style: italic; margin-top: 15px; }
+        .btn-vip:hover { background: #f59e0b; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🌌 SINGULARITY V48</h1>
-    <div class="credits" id="creditDisplay">Crédits gratuits : 5/5</div>
-    
-    <button id="actionBtn" onclick="generatePrediction()">🎯 DEMANDER UNE PRÉDICTION</button>
-    <div id="loadingText" class="loading">⏳ Analyse des algorithmes en cours...</div>
-    
-    <div id="resultBox" class="result-box">
-        <p>✅ SIGNAL CONFIRMÉ</p>
-        <div class="target" id="targetOdds">2.00x</div>
-        <p>Heure d'entrée prévue : <strong id="targetTime">--:--</strong></p>
-    </div>
+<div class="dashboard">
+    <div class="glass-panel">
+        <h1>SINGULARITY V48</h1>
+        <div class="subtitle">Analyseur de Flux Quantique</div>
 
-    <div id="vipSection" class="vip-section">
-        <p style="color: #ef4444;">🚫 Crédits épuisés.</p>
-        <input type="text" id="vipCode" placeholder="Entrez votre Clé VIP">
-        <button onclick="checkVip()" style="background: #eab308; color: black;">🔓 Activer VIP</button>
+        <div class="credit-container">
+            <div class="credit-text">
+                <span id="statusLabel">Statut : Essai Gratuit</span>
+                <span id="creditDisplay">5/5</span>
+            </div>
+        </div>
+        
+        <button id="actionBtn" class="btn-neon" onclick="generatePrediction()">LANCER L'ANALYSE</button>
+        
+        <div id="loadingZone" class="radar-box">
+            <div class="radar"></div>
+            <div style="color: var(--neon-blue); font-family: 'Rajdhani'; font-size: 1.1rem; letter-spacing: 1px;">
+                SYNCHRONISATION...
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Décodage du hachage réseau</div>
+        </div>
+        
+        <div id="resultBox" class="result-box">
+            <div style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">Signal Confirmé</div>
+            <div class="target-multiplier" id="targetOdds">0.00x</div>
+            <div class="target-time">Entrée optimale : <span id="targetTime">--:--</span></div>
+        </div>
+
+        <div id="vipSection" class="vip-section">
+            <div style="color: var(--danger); font-size: 0.9rem; margin-bottom: 15px;">
+                ⚠️ Limite d'essais atteinte.
+            </div>
+            <input type="text" id="vipCode" class="vip-input" placeholder="Entrez votre clé d'activation">
+            <button class="btn-vip" onclick="checkVip()">DÉVERROUILLER LE RADAR</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Liste de vos mots de passe VIP
+    // Vos mots de passe VIP (Modifiez-les ici)
     const VIP_CODES = ["ROME225", "VIP500K", "BOSS2026"];
     
-    // Initialisation du joueur avec la mémoire du navigateur (localStorage)
-    let userCredits = localStorage.getItem('credits');
-    let isVip = localStorage.getItem('isVip') === 'true';
+    // Initialisation
+    let userCredits = localStorage.getItem('sngl_credits');
+    let isVip = localStorage.getItem('sngl_isVip') === 'true';
 
     if (userCredits === null) {
         userCredits = 5;
-        localStorage.setItem('credits', 5);
+        localStorage.setItem('sngl_credits', 5);
     } else {
         userCredits = parseInt(userCredits);
     }
 
+    // Mise à jour visuelle
     function updateUI() {
+        const statusLabel = document.getElementById('statusLabel');
+        const creditDisplay = document.getElementById('creditDisplay');
+        const actionBtn = document.getElementById('actionBtn');
+        const vipSection = document.getElementById('vipSection');
+
         if (isVip) {
-            document.getElementById('creditDisplay').innerText = "Accès VIP : Illimité 💎";
-            document.getElementById('creditDisplay').style.color = "#fbbf24";
-            document.getElementById('vipSection').style.display = 'none';
-            document.getElementById('actionBtn').disabled = false;
+            statusLabel.innerText = "Statut : ACCÈS PREMIUM";
+            statusLabel.classList.add('vip-badge');
+            creditDisplay.innerText = "Illimité";
+            creditDisplay.classList.add('vip-badge');
+            vipSection.style.display = 'none';
+            actionBtn.disabled = false;
         } else {
-            document.getElementById('creditDisplay').innerText = `Crédits gratuits : ${userCredits}/5`;
+            creditDisplay.innerText = `${userCredits}/5`;
             if (userCredits <= 0) {
-                document.getElementById('actionBtn').disabled = true;
-                document.getElementById('vipSection').style.display = 'block';
+                actionBtn.disabled = true;
+                actionBtn.innerText = "RADAR VERROUILLÉ";
+                vipSection.style.display = 'block';
             }
         }
     }
 
+    // Le moteur de l'application
     function generatePrediction() {
         if (!isVip && userCredits <= 0) return;
 
-        // Cacher l'ancien résultat et montrer le chargement
+        // Préparation de l'UI
         document.getElementById('resultBox').style.display = 'none';
-        document.getElementById('loadingText').style.display = 'block';
-        document.getElementById('actionBtn').disabled = true;
+        document.getElementById('loadingZone').style.display = 'block';
+        document.getElementById('actionBtn').style.display = 'none';
 
-        // Déduire le crédit si non VIP
+        // Déduction des crédits
         if (!isVip) {
             userCredits--;
-            localStorage.setItem('credits', userCredits);
+            localStorage.setItem('sngl_credits', userCredits);
         }
-
         updateUI();
 
-        // Attendre 2 secondes (effet d'analyse)
+        // Simulation du calcul (2.5 secondes)
         setTimeout(() => {
-            document.getElementById('loadingText').style.display = 'none';
+            document.getElementById('loadingZone').style.display = 'none';
+            document.getElementById('actionBtn').style.display = 'block';
             document.getElementById('resultBox').style.display = 'block';
-            document.getElementById('actionBtn').disabled = userCredits <= 0 && !isVip;
 
-            // Logique V48
+            // Algorithme de pondération V48
             let rand = Math.random();
             let target = 0;
             if (rand < 0.70) target = (Math.random() * (1.99 - 1.50) + 1.50).toFixed(2);
             else if (rand < 0.90) target = (Math.random() * (2.49 - 2.00) + 2.00).toFixed(2);
             else target = (Math.random() * (3.50 - 2.50) + 2.50).toFixed(2);
 
+            // Calcul du Timing (2 à 4 minutes)
             let now = new Date();
-            now.setMinutes(now.getMinutes() + Math.floor(Math.random() * 4) + 2);
+            now.setMinutes(now.getMinutes() + Math.floor(Math.random() * 3) + 2);
             let timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
+            // Affichage avec animation
             document.getElementById('targetOdds').innerText = target + "x";
             document.getElementById('targetTime').innerText = timeStr;
-        }, 2000);
+            
+            // Re-désactiver le bouton si 0 crédit
+            if (!isVip && userCredits <= 0) {
+                document.getElementById('actionBtn').disabled = true;
+                document.getElementById('actionBtn').innerText = "RADAR VERROUILLÉ";
+            } else {
+                document.getElementById('actionBtn').innerText = "NOUVELLE ANALYSE";
+            }
+
+        }, 2500);
     }
 
+    // Validation du code VIP
     function checkVip() {
         let inputCode = document.getElementById('vipCode').value.trim().toUpperCase();
         if (VIP_CODES.includes(inputCode)) {
             isVip = true;
-            localStorage.setItem('isVip', 'true');
-            alert("✅ Code VIP accepté ! Accès illimité débloqué.");
+            localStorage.setItem('sngl_isVip', 'true');
+            document.getElementById('actionBtn').innerText = "LANCER L'ANALYSE";
+            document.getElementById('actionBtn').style.display = 'block';
             updateUI();
         } else {
-            alert("❌ Code invalide.");
+            // Effet d'erreur rouge
+            const inputField = document.getElementById('vipCode');
+            inputField.style.borderColor = "#ff3366";
+            inputField.value = "";
+            inputField.placeholder = "Code invalide !";
+            setTimeout(() => { 
+                inputField.style.borderColor = "#334155"; 
+                inputField.placeholder = "Entrez votre clé d'activation";
+            }, 2000);
         }
     }
 
-    // Lancer l'affichage au démarrage
+    // Lancement
     updateUI();
 </script>
 
