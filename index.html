@@ -293,7 +293,7 @@
 
             </div>
 
-            <button class="btn-restart" onclick="resetRadar()">Relancer le Scanner</button>
+            <button id="restartBtn" class="btn-restart" onclick="resetRadar()">Relancer le Scanner</button>
         </div>
 
     </div>
@@ -333,7 +333,35 @@
         "Génération des cibles..."
     ];
 
+    // Récupérer le verrou temporel sauvegardé
+    let lockEndTime = localStorage.getItem('sngl_lock_time') ? parseInt(localStorage.getItem('sngl_lock_time')) : 0;
+
+    // Fonction d'alerte élégante si un signal est toujours actif
+    function showLockWarning(buttonId) {
+        let lockedDate = new Date(lockEndTime);
+        let timeStr = lockedDate.getHours().toString().padStart(2, '0') + ':' + lockedDate.getMinutes().toString().padStart(2, '0');
+        
+        const btn = document.getElementById(buttonId);
+        let originalText = btn.innerText;
+        
+        btn.innerText = "⏳ PATIENTEZ JUSQU'À " + timeStr;
+        btn.style.color = "var(--warning)";
+        btn.style.borderColor = "var(--warning)";
+        
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.color = "";
+            btn.style.borderColor = "";
+        }, 3000);
+    }
+
     function generatePrediction() {
+        // Vérification du verrouillage avant de lancer l'analyse
+        if (Date.now() < lockEndTime) {
+            showLockWarning('actionBtn');
+            return;
+        }
+
         document.getElementById('actionBtn').style.display = 'none';
         document.getElementById('resultBox').style.display = 'none';
         document.getElementById('loadingZone').style.display = 'block';
@@ -365,33 +393,44 @@
             // Stratégie
             let rand = Math.random();
             let strat;
-            if (rand < 0.50) strat = strategies[0]; // Standard (50%)
-            else if (rand < 0.85) strat = strategies[1]; // Volatile (35%)
-            else strat = strategies[2]; // Rupture (15%)
+            if (rand < 0.50) strat = strategies[0];
+            else if (rand < 0.85) strat = strategies[1];
+            else strat = strategies[2];
 
             // Calcul des cibles
             let sniperTarget = parseFloat((Math.random() * (strat.targetMax - strat.targetMin) + strat.targetMin).toFixed(2));
-            
-            // La cible sécurisée est 30% plus basse que la cible sniper (avec un minimum de 1.20x)
             let safeTarget = parseFloat((sniperTarget * 0.70).toFixed(2));
             if (safeTarget < 1.20) safeTarget = 1.20;
 
             document.getElementById('safeTarget').innerText = safeTarget.toFixed(2) + "x";
             document.getElementById('sniperTarget').innerText = sniperTarget.toFixed(2) + "x";
 
-            // Calcul de l'Heure (SANS LES SECONDES)
+            // Calcul de l'Heure Cible (SANS LES SECONDES)
             let now = new Date();
             now.setMinutes(now.getMinutes() + Math.floor(Math.random() * 4) + 2); 
+            // On fixe les secondes à 59 pour que le verrou dure jusqu'à la fin de la minute ciblée
+            now.setSeconds(59); 
+
             let timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
                           now.getMinutes().toString().padStart(2, '0');
 
             document.getElementById('targetTime').innerText = timeStr;
             document.getElementById('strategicAdvice').innerText = strat.advice;
 
+            // Enregistrement du verrou temporel
+            lockEndTime = now.getTime();
+            localStorage.setItem('sngl_lock_time', lockEndTime);
+
         }, 2800);
     }
 
     function resetRadar() {
+        // Vérification du verrouillage sur le bouton de relance
+        if (Date.now() < lockEndTime) {
+            showLockWarning('restartBtn');
+            return;
+        }
+
         document.getElementById('resultBox').style.display = 'none';
         document.getElementById('actionBtn').style.display = 'block';
     }
