@@ -1,110 +1,183 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bot Mines 1Win Mobile</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #121212;
-      color: white;
-      text-align: center;
-      padding: 10px;
-    }
-
-    h1 {
-      font-size: 1.5em;
-      color: #00ff99;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-top: 20px;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .cell {
-      background-color: #1e1e1e;
-      height: 50px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.2em;
-      transition: 0.3s;
-    }
-
-    .safe {
-      background-color: #00c853;
-      color: white;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      background-color: #00ff99;
-      border: none;
-      border-radius: 6px;
-      font-size: 1em;
-      color: #000;
-      cursor: pointer;
-    }
-
-    .footer {
-      margin-top: 30px;
-      font-size: 12px;
-      color: #888;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Singularity V48 - Radar Bot</title>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 { color: #38bdf8; margin-top: 0; }
+        .credits {
+            font-size: 1.2em;
+            background: #334155;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #22c55e;
+            border-radius: 8px;
+            background: #064e3b;
+            display: none;
+        }
+        .target { font-size: 2em; color: #4ade80; font-weight: bold; }
+        
+        .vip-section {
+            margin-top: 20px;
+            display: none;
+        }
+        input[type="text"] {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #64748b;
+            background: #0f172a;
+            color: white;
+        }
+        .loading { display: none; color: #fbbf24; font-style: italic; margin-top: 15px; }
+    </style>
 </head>
 <body>
-  <h1>🤖 Bot Mines 1Win</h1>
-  <p>Génère des signaux sûrs à jouer (grille 5x5)</p>
-  <button onclick="genererSignaux()">🎯 Générer les signaux</button>
-  <div class="grid" id="grille"></div>
-  <div class="footer">Créé pour usage fictif – Non connecté à 1win</div>
 
-  <script>
-    const taille = 5;
-    const nbMines = 3;
-    const nbSignaux = 5;
+<div class="container">
+    <h1>🌌 SINGULARITY V48</h1>
+    <div class="credits" id="creditDisplay">Crédits gratuits : 5/5</div>
+    
+    <button id="actionBtn" onclick="generatePrediction()">🎯 DEMANDER UNE PRÉDICTION</button>
+    <div id="loadingText" class="loading">⏳ Analyse des algorithmes en cours...</div>
+    
+    <div id="resultBox" class="result-box">
+        <p>✅ SIGNAL CONFIRMÉ</p>
+        <div class="target" id="targetOdds">2.00x</div>
+        <p>Heure d'entrée prévue : <strong id="targetTime">--:--</strong></p>
+    </div>
 
-    function genererSignaux() {
-      const total = taille * taille;
-      const grille = document.getElementById("grille");
-      grille.innerHTML = "";
+    <div id="vipSection" class="vip-section">
+        <p style="color: #ef4444;">🚫 Crédits épuisés.</p>
+        <input type="text" id="vipCode" placeholder="Entrez votre Clé VIP">
+        <button onclick="checkVip()" style="background: #eab308; color: black;">🔓 Activer VIP</button>
+    </div>
+</div>
 
-      const mines = new Set();
-      while (mines.size < nbMines) {
-        mines.add(Math.floor(Math.random() * total));
-      }
+<script>
+    // Liste de vos mots de passe VIP
+    const VIP_CODES = ["ROME225", "VIP500K", "BOSS2026"];
+    
+    // Initialisation du joueur avec la mémoire du navigateur (localStorage)
+    let userCredits = localStorage.getItem('credits');
+    let isVip = localStorage.getItem('isVip') === 'true';
 
-      const possibles = [...Array(total).keys()].filter(i => !mines.has(i));
-      const signaux = [];
-
-      while (signaux.length < nbSignaux) {
-        const idx = Math.floor(Math.random() * possibles.length);
-        signaux.push(possibles.splice(idx, 1)[0]);
-      }
-
-      for (let i = 0; i < total; i++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        if (signaux.includes(i)) {
-          cell.classList.add("safe");
-          cell.innerHTML = "✅";
-        }
-        grille.appendChild(cell);
-      }
+    if (userCredits === null) {
+        userCredits = 5;
+        localStorage.setItem('credits', 5);
+    } else {
+        userCredits = parseInt(userCredits);
     }
 
-    genererSignaux();
-  </script>
+    function updateUI() {
+        if (isVip) {
+            document.getElementById('creditDisplay').innerText = "Accès VIP : Illimité 💎";
+            document.getElementById('creditDisplay').style.color = "#fbbf24";
+            document.getElementById('vipSection').style.display = 'none';
+            document.getElementById('actionBtn').disabled = false;
+        } else {
+            document.getElementById('creditDisplay').innerText = `Crédits gratuits : ${userCredits}/5`;
+            if (userCredits <= 0) {
+                document.getElementById('actionBtn').disabled = true;
+                document.getElementById('vipSection').style.display = 'block';
+            }
+        }
+    }
+
+    function generatePrediction() {
+        if (!isVip && userCredits <= 0) return;
+
+        // Cacher l'ancien résultat et montrer le chargement
+        document.getElementById('resultBox').style.display = 'none';
+        document.getElementById('loadingText').style.display = 'block';
+        document.getElementById('actionBtn').disabled = true;
+
+        // Déduire le crédit si non VIP
+        if (!isVip) {
+            userCredits--;
+            localStorage.setItem('credits', userCredits);
+        }
+
+        updateUI();
+
+        // Attendre 2 secondes (effet d'analyse)
+        setTimeout(() => {
+            document.getElementById('loadingText').style.display = 'none';
+            document.getElementById('resultBox').style.display = 'block';
+            document.getElementById('actionBtn').disabled = userCredits <= 0 && !isVip;
+
+            // Logique V48
+            let rand = Math.random();
+            let target = 0;
+            if (rand < 0.70) target = (Math.random() * (1.99 - 1.50) + 1.50).toFixed(2);
+            else if (rand < 0.90) target = (Math.random() * (2.49 - 2.00) + 2.00).toFixed(2);
+            else target = (Math.random() * (3.50 - 2.50) + 2.50).toFixed(2);
+
+            let now = new Date();
+            now.setMinutes(now.getMinutes() + Math.floor(Math.random() * 4) + 2);
+            let timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            document.getElementById('targetOdds').innerText = target + "x";
+            document.getElementById('targetTime').innerText = timeStr;
+        }, 2000);
+    }
+
+    function checkVip() {
+        let inputCode = document.getElementById('vipCode').value.trim().toUpperCase();
+        if (VIP_CODES.includes(inputCode)) {
+            isVip = true;
+            localStorage.setItem('isVip', 'true');
+            alert("✅ Code VIP accepté ! Accès illimité débloqué.");
+            updateUI();
+        } else {
+            alert("❌ Code invalide.");
+        }
+    }
+
+    // Lancer l'affichage au démarrage
+    updateUI();
+</script>
+
 </body>
 </html>
