@@ -307,21 +307,22 @@
         "Panique Vendeuse (Opportunité)"
     ];
 
+    // Bornes strictement ajustées pour rester entre 1.50x et 3.00x
     const strategies = [
         {
-            type: "STANDARD",
-            targetMin: 1.80, targetMax: 2.20,
-            advice: "Configuration stable. Utilisez la Cible Sécurisée pour 70% de votre mise, et laissez courir les 30% restants jusqu'à la Cible Sniper."
+            type: "VOLATILE", // Cotes basses (40% de chances)
+            targetMin: 1.65, targetMax: 1.95,
+            advice: "Pression algorithmique forte. Ne cherchez pas l'exploit. Encaissez le maximum de la mise sur la Cible Sécurisée."
         },
         {
-            type: "VOLATILE",
-            targetMin: 1.50, targetMax: 1.75,
-            advice: "Pression algorithmique forte. Ne cherchez pas l'exploit. Encaissez 100% de la mise sur la Cible Sécurisée."
+            type: "STANDARD", // Cotes moyennes (45% de chances)
+            targetMin: 2.00, targetMax: 2.45,
+            advice: "Configuration stable. Utilisez la Cible Sécurisée pour 70% de votre mise, et laissez courir le reste vers la Cible Sniper."
         },
         {
-            type: "RUPTURE",
-            targetMin: 2.50, targetMax: 4.00,
-            advice: "Forte probabilité de pompe. Adoptez une approche millimétrée : divisez votre mise habituelle par deux pour gérer le risque."
+            type: "RUPTURE", // Cotes hautes (15% de chances)
+            targetMin: 2.50, targetMax: 3.00,
+            advice: "Fenêtre de hausse détectée. Approche millimétrée : sécurisez votre base tôt et visez la Cible Sniper avec le profit."
         }
     ];
 
@@ -390,17 +391,19 @@
             document.getElementById('psychoData').innerText = psycho;
             document.getElementById('pressureData').innerText = pressure;
 
-            // Stratégie
+            // Sélection de la stratégie (Intelligente et pondérée)
             let rand = Math.random();
             let strat;
-            if (rand < 0.50) strat = strategies[0];
-            else if (rand < 0.85) strat = strategies[1];
-            else strat = strategies[2];
+            if (rand < 0.40) strat = strategies[0];      // 40% de chances : 1.65x à 1.95x
+            else if (rand < 0.85) strat = strategies[1]; // 45% de chances : 2.00x à 2.45x
+            else strat = strategies[2];                  // 15% de chances : 2.50x à 3.00x
 
-            // Calcul des cibles
+            // Calcul des cibles avec respect strict de la fourchette 1.50 - 3.00
             let sniperTarget = parseFloat((Math.random() * (strat.targetMax - strat.targetMin) + strat.targetMin).toFixed(2));
-            let safeTarget = parseFloat((sniperTarget * 0.70).toFixed(2));
-            if (safeTarget < 1.20) safeTarget = 1.20;
+            
+            // La cible de sécurité est calculée en dessous de la cible sniper, mais bloquée à 1.50 minimum
+            let safeTarget = parseFloat((sniperTarget * 0.75).toFixed(2));
+            if (safeTarget < 1.50) safeTarget = 1.50;
 
             document.getElementById('safeTarget').innerText = safeTarget.toFixed(2) + "x";
             document.getElementById('sniperTarget').innerText = sniperTarget.toFixed(2) + "x";
